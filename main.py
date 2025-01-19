@@ -3,7 +3,16 @@
 # reads the .pg source file, 
 # invokes the compiler, 
 # and writes the generated Python code to an output file.
+"""
+Explanation:
 
+Argument Parsing: Utilizes Python's argparse module to handle command-line inputs.
+source_file: The .pg file to compile.
+-o / --output: Optional argument to specify the output .py file. Defaults to the source file's name with a .py extension if not provided.
+File Validation: Checks if the source file exists and has the correct .pg extension.
+Compilation Process: Reads the source code, invokes the compiler, and writes the generated Python code to the specified output file.
+User Feedback: Prints success or error messages based on the compilation outcome.
+"""
 # main.py
 import argparse
 import os
