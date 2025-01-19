@@ -4,6 +4,17 @@
 #  In this implementation, 
 # the parser ensures that the tokens adhere to the language's syntax rules
 
+"""
+Explanation:
+
+parse Method:
+Purpose: Validates the syntax of the token list.
+Functionality:
+Iterates through each token and checks for the presence of required fields based on the token type.
+Raises SyntaxError if any required field is missing.
+Extensibility: Can be expanded to build an Abstract Syntax Tree (AST) or perform more complex syntax analyses in the future.
+"""
+
 # compiler/parser.py
 from compiler.tokens import TokenType
 
