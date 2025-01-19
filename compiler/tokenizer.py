@@ -21,7 +21,6 @@ Error Handling: Skips unrecognized lines silently (can be enhanced for better fe
 """
 
 from compiler.tokens import TokenType
-from textwrap import dedent
 
 class Tokenizer:
     def __init__(self):
