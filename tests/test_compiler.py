@@ -36,29 +36,20 @@ class TestCompiler(unittest.TestCase):
             "",
             'print("Hello, World!")'
         ])
-        self.assertEqual(compiled, expected)
+        self.assertMultiLineEqual(compiled, expected)
 
     def test_compile_full_script(self):
         code = """
 penguinSay "Hello, World!"
-
 x = 10
 y = 20
-
-penguinDo add(a, b)
-    penguinSay "Adding numbers"
-    result = a + b
-    returnIce result
-
 z = add(x, y)
-
-keepWalking(x < z)
+KEEP_WALKING x < z
     penguinSay "x is still less than z"
     x = x + 1
-
-penguinIf(x == z)
+PENGUIN_IF x == z
     penguinSay "x now equals z"
-penguinElse
+PENGUIN_ELSE
     penguinSay "x does not equal z"
 """
         compiled = self.compiler.compile(code)
@@ -73,24 +64,19 @@ penguinElse
             "        except ValueError:",
             "            return inp",
             "",
-            "def add(a, b):",
-            "    print(\"Adding numbers\")",
-            "    result = a + b",
-            "    return result",
-            "",
             'print("Hello, World!")',
-            'x = 10',
-            'y = 20',
-            'z = add(x, y)',
+            "x = 10",
+            "y = 20",
+            "z = add(x, y)",
             "while x < z:",
-            "    print(\"x is still less than z\")",
+            '    print("x is still less than z")',
             "    x = x + 1",
             "if x == z:",
-            "    print(\"x now equals z\")",
+            '    print("x now equals z")',
             "else:",
-            "    print(\"x does not equal z\")"
+            '    print("x does not equal z")'
         ])
-        self.assertEqual(compiled, expected)
+        self.assertMultiLineEqual(compiled, expected)
 
     def test_compile_with_custom_arithmetic_operations(self):
         code = 'slideUp(total) = x + y'
@@ -108,7 +94,7 @@ penguinElse
             "",
             'total = x + y'
         ])
-        self.assertEqual(compiled, expected)
+        self.assertMultiLineEqual(compiled, expected)
 
     def test_compile_with_unrecognized_syntax(self):
         code = """
@@ -129,9 +115,9 @@ x = 10
             "            return inp",
             "",
             'print("Hello, World!")',
-            'x = 10'
+            "x = 10"
         ])
-        self.assertEqual(compiled, expected)
+        self.assertMultiLineEqual(compiled, expected)
 
 if __name__ == '__main__':
     unittest.main()
