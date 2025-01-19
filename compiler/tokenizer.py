@@ -2,6 +2,22 @@
 # Implements the tokenization logic, 
 # converting raw .pg code into a list of tokens based on defined token types.
 
+"""
+Explanation:
+
+Token Types Handled:
+penguinSay: For printing messages.
+penguinTake: For taking user input.
+keepWalking: Represents a while loop.
+penguinIf, penguinWhatAbout, penguinElse: Represents if, elif, and else statements.
+penguinDo: For defining functions.
+Variable Assignments: Assigns values to variables.
+Arithmetic Operations: Custom operations like slideUp, slideDown, etc., mapped to Python arithmetic operators.
+returnIce: For returning values from functions.
+Recursive Tokenization: Handles nested blocks by recursively tokenizing indented lines.
+Custom Arithmetic Operations: Maps custom commands to standard arithmetic operators.
+Error Handling: Skips unrecognized lines silently (can be enhanced for better feedback).
+"""
 # The Tokenizer class provides a tokenize method that processes the raw .pg code line by line,
 class Tokenizer:
     def __init__(self):
