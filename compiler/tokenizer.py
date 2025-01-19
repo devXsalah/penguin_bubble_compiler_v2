@@ -2,8 +2,7 @@
 # Implements the tokenization logic, 
 # converting raw .pg code into a list of tokens based on defined token types.
 
-# compiler/tokenizer.py
-
+# The Tokenizer class provides a tokenize method that processes the raw .pg code line by line,
 class Tokenizer:
     def __init__(self):
         pass  # No initialization needed
