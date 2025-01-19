@@ -13,7 +13,6 @@ File Validation: Checks if the source file exists and has the correct .pg extens
 Compilation Process: Reads the source code, invokes the compiler, and writes the generated Python code to the specified output file.
 User Feedback: Prints success or error messages based on the compilation outcome.
 """
-# main.py
 import argparse
 import os
 from compiler.compiler import PenguinBubbleCompiler
