@@ -4,20 +4,65 @@
 # source code into a structured list of tokens based on defined token types.
 
 """
-Explanation:
+    Explanation:
 
-Token Types Handled:
-penguinSay: For printing messages.
-penguinTake: For taking user input.
-keepWalking: Represents a while loop.
-penguinIf, penguinWhatAbout, penguinElse: Represents if, elif, and else statements.
-penguinDo: For defining functions.
-Variable Assignments: Assigns values to variables.
-Arithmetic Operations: Custom operations like slideUp, slideDown, etc., mapped to Python arithmetic operators.
-returnIce: For returning values from functions.
-Recursive Tokenization: Handles nested blocks by recursively tokenizing indented lines.
-Custom Arithmetic Operations: Maps custom commands to standard arithmetic operators.
-Error Handling: Skips unrecognized lines silently (can be enhanced for better feedback).
+    The Tokenizer (Lexer) is responsible for converting raw `.pg` source code into a structured list of tokens. Each token represents a syntactic element of the language, facilitating the subsequent code generation process. The Tokenizer handles various command types, variable assignments, and arithmetic operations, ensuring that the compiled Python code accurately reflects the intended logic.
+
+    Key Functionalities:
+
+    1. **Case-Insensitive Parsing:**
+       - Recognizes commands regardless of their case (e.g., `KEEP_WALKING`, `keep_walking`, `Keep_Walking` are all valid).
+       - Ensures flexibility in the source code's formatting.
+
+    2. **Command Recognition:**
+       - **Print Statements (`penguinSay`):** Parses lines starting with `penguinSay` to generate `print()` statements.
+       - **Input Handling (`penguinTake`):** Parses lines starting with `penguinTake` to generate assignments using the `dynamic_input` function.
+       - **Control Structures:**
+         - **While Loops (`KEEP_WALKING`):** Parses `KEEP_WALKING` commands followed by a condition to generate `while` loops.
+         - **If Statements (`PENGUIN_IF`):** Parses `PENGUIN_IF` commands followed by a condition to generate `if` statements.
+         - **Elif Statements (`PENGUIN_WHAT_ABOUT`):** Parses `PENGUIN_WHAT_ABOUT` commands followed by a condition to generate `elif` statements.
+         - **Else Statements (`PENGUIN_ELSE`):** Parses `PENGUIN_ELSE` commands to generate `else` statements.
+
+    3. **Function Definitions (`penguinDo`):**
+       - Parses `penguinDo` commands to define Python functions.
+       - Extracts function names and parameters.
+       - Handles nested blocks within function definitions.
+
+    4. **Variable Assignments:**
+       - Recognizes and parses variable assignments (e.g., `x = 10`).
+       - Differentiates between standard assignments and those involving custom arithmetic operations.
+
+    5. **Arithmetic Operations:**
+       - Handles custom arithmetic operations like `slideUp`, `slideDown`, `penguinBoost`, `givePenguins`, and `snowball`.
+       - Maps these custom operations to standard Python arithmetic operators (`+`, `-`, `*`, `/`, `**`).
+       - Parses expressions involving these operations to generate accurate Python assignments.
+
+    6. **Return Statements (`returnIce`):**
+       - Parses `returnIce` commands to generate Python `return` statements within functions.
+
+    7. **Recursive Tokenization for Nested Blocks:**
+       - Handles nested control structures and function definitions by recursively tokenizing indented blocks.
+       - Ensures that the hierarchical structure of the source code is accurately represented in the token list.
+
+    8. **Error Handling:**
+       - Silently skips unrecognized or malformed lines without interrupting the tokenization process.
+       - This can be enhanced to include logging or raising exceptions for better debugging and feedback.
+
+    9. **Consistent Token Structure:**
+       - Ensures that all tokens use the `TokenType` enums for consistency.
+       - Facilitates seamless interaction with the `CodeGenerator`.
+
+    10. **Indentation Handling:**
+        - Recognizes both spaces and tabs for indentation.
+        - Strips leading indentation to correctly parse the content of each line.
+
+    11. **Extensibility:**
+        - Designed to easily incorporate additional command types and their corresponding parsing logic as the language evolves.
+
+    Usage:
+    - Initialize an instance of `Tokenizer`.
+    - Call the `tokenize` method with the raw `.pg` source code as input.
+    - Receive a list of structured tokens representing the syntactic elements of the source code.
 """
 
 from compiler.tokens import TokenType

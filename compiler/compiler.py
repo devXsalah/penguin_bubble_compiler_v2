@@ -3,17 +3,51 @@
 # transforming .pg code into Python code.
 
 """
-Explanation:
+    Explanation:
 
-Initialization:
-Tokenizer Instance: Responsible for converting raw .pg code into tokens.
-CodeGenerator Instance: Handles the transformation of tokens into Python code.
-Compilation Process (compile Method):
-Tokenization: Converts the raw code into tokens using the Tokenizer.
-Dynamic Input Function: Inserts a helper function dynamic_input at the beginning of the generated Python code to handle user inputs.
-Token Separation: Separates function definitions (penguinDo) from other tokens to ensure that functions are defined before they are called.
-Code Generation: Uses the CodeGenerator to translate tokens into Python code, compiling functions first and then other statements.
-Output: Joins all compiled code lines into a single string for output.
+    The CodeGenerator is responsible for translating a list of structured tokens into properly indented Python code. It handles various token types by mapping them to their corresponding Python syntax, ensuring that control structures are correctly indented to reflect their hierarchical relationships.
+
+    Key Functionalities:
+
+    1. **Function Definitions (`PENGUIN_DO`):**
+       - Translates to Python `def` statements.
+       - Manages indentation levels to ensure the function body is properly indented.
+       - Supports nested function definitions if required.
+
+    2. **Print Statements (`PENGUIN_SAY`):**
+       - Translates to Python `print()` functions.
+       - Ensures that print statements within control structures are correctly indented.
+
+    3. **Variable Assignments (`VARIABLE_ASSIGNMENT`):**
+       - Directly translates to Python variable assignments.
+       - Handles assignments both within and outside control structures.
+
+    4. **Input Handling (`PENGUIN_TAKE`):**
+       - Utilizes a pre-defined `dynamic_input` function to handle user inputs.
+       - Translates to Python assignments that call `dynamic_input()` with the provided prompt.
+
+    5. **Return Statements (`RETURN_ICE`):**
+       - Translates to Python `return` statements.
+       - Ensures proper indentation within function bodies.
+
+    6. **Control Structures:**
+       - **While Loops (`KEEP_WALKING`):** Translates to Python `while` loops.
+       - **If Statements (`PENGUIN_IF`):** Translates to Python `if` statements.
+       - **Elif Statements (`PENGUIN_WHAT_ABOUT`):** Translates to Python `elif` statements.
+       - **Else Statements (`PENGUIN_ELSE`):** Translates to Python `else` statements.
+       - Manages indentation levels dynamically to reflect nested blocks within these structures.
+
+    7. **Indentation Management:**
+       - Maintains an `indentation_level` to track the current depth of nested blocks.
+       - Uses a consistent indentation string (`self.indentation_str`) to ensure uniformity across the generated code.
+       - Adjusts indentation levels when entering and exiting control structures and function definitions.
+
+    8. **Extensibility:**
+       - Designed to easily incorporate additional token types and their corresponding Python translations.
+       - Facilitates maintenance and scalability as new features are added to the `.pg` language.
+
+    9. **Error Handling:**
+       - Currently, unrecognized tokens are ignored. This can be enhanced to include logging or raising exceptions for better debugging and feedback.
 """
 
 from compiler.tokenizer import Tokenizer
