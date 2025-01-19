@@ -1,6 +1,7 @@
 #Purpose: 
-# Implements the tokenization logic, 
-# converting raw .pg code into a list of tokens based on defined token types.
+# Implements the tokenizer (lexer), 
+# responsible for converting raw .pg 
+# source code into a structured list of tokens based on defined token types.
 
 """
 Explanation:
@@ -18,10 +19,12 @@ Recursive Tokenization: Handles nested blocks by recursively tokenizing indented
 Custom Arithmetic Operations: Maps custom commands to standard arithmetic operators.
 Error Handling: Skips unrecognized lines silently (can be enhanced for better feedback).
 """
-# The Tokenizer class provides a tokenize method that processes the raw .pg code line by line,
+# compiler/tokenizer.py
+from compiler.tokens import TokenType
+
 class Tokenizer:
     def __init__(self):
-        pass  # No initialization needed
+        pass  # No initialization needed for now
 
     def tokenize(self, code):
         tokens = []
@@ -36,7 +39,7 @@ class Tokenizer:
 
             if line.strip().startswith("penguinSay"):
                 value = line.strip()[len("penguinSay"):].strip()
-                tokens.append({"type": "penguinSay", "value": value})
+                tokens.append({"type": TokenType.PENGUIN_SAY, "value": value})
                 i += 1
 
             elif line.strip().startswith("penguinTake"):
@@ -55,7 +58,7 @@ class Tokenizer:
                     # Prompt is an expression
                     # Assuming prompt follows penguinTake(name) without quotes
                     prompt = line.strip().split(')', 1)[1].strip()
-                tokens.append({"type": "penguinTake", "name": name, "prompt": prompt})
+                tokens.append({"type": TokenType.PENGUIN_TAKE, "name": name, "prompt": prompt})
                 i += 1
 
             elif line.strip().startswith("keepWalking"):
@@ -72,7 +75,7 @@ class Tokenizer:
                     i += 1
                 # Tokenize the block recursively
                 block_tokens = self.tokenize('\n'.join(block_lines))
-                tokens.append({"type": "keepWalking", "condition": condition, "block": block_tokens})
+                tokens.append({"type": TokenType.KEEP_WALKING, "condition": condition, "block": block_tokens})
 
             elif line.strip().startswith("penguinIf"):
                 condition_start = line.find('(') + 1
@@ -88,7 +91,7 @@ class Tokenizer:
                     i += 1
                 # Tokenize the block recursively
                 block_tokens = self.tokenize('\n'.join(block_lines))
-                tokens.append({"type": "penguinIf", "condition": condition, "block": block_tokens})
+                tokens.append({"type": TokenType.PENGUIN_IF, "condition": condition, "block": block_tokens})
 
             elif line.strip().startswith("penguinWhatAbout"):
                 condition_start = line.find('(') + 1
@@ -104,7 +107,7 @@ class Tokenizer:
                     i += 1
                 # Tokenize the block recursively
                 block_tokens = self.tokenize('\n'.join(block_lines))
-                tokens.append({"type": "penguinWhatAbout", "condition": condition, "block": block_tokens})
+                tokens.append({"type": TokenType.PENGUIN_WHAT_ABOUT, "condition": condition, "block": block_tokens})
 
             elif line.strip().startswith("penguinElse"):
                 # Collect the block lines
@@ -116,7 +119,7 @@ class Tokenizer:
                     i += 1
                 # Tokenize the block recursively
                 block_tokens = self.tokenize('\n'.join(block_lines))
-                tokens.append({"type": "penguinElse", "block": block_tokens})
+                tokens.append({"type": TokenType.PENGUIN_ELSE, "block": block_tokens})
 
             elif line.strip().startswith("penguinDo"):
                 header = line.strip()
@@ -138,11 +141,11 @@ class Tokenizer:
                 params = header[params_start:params_end].strip()
                 # Tokenize the block recursively
                 block_tokens = self.tokenize(block)
-                tokens.append({"type": "penguinDo", "name": name, "params": params, "block": block_tokens})
+                tokens.append({"type": TokenType.PENGUIN_DO, "name": name, "params": params, "block": block_tokens})
 
             elif "=" in line and not any(line.strip().startswith(op) for op in ["slideUp", "slideDown", "penguinBoost", "givePenguins", "snowball"]):
                 name, value = line.strip().split("=", 1)
-                tokens.append({"type": "variableAssignment", "name": name.strip(), "value": value.strip()})
+                tokens.append({"type": TokenType.VARIABLE_ASSIGNMENT, "name": name.strip(), "value": value.strip()})
                 i += 1
 
             elif any(line.strip().startswith(op) for op in ["slideUp", "slideDown", "penguinBoost", "givePenguins", "snowball"]):
@@ -157,12 +160,26 @@ class Tokenizer:
                 for op_key, op_symbol in op_map.items():
                     if line.strip().startswith(op_key):
                         line_content = line.strip()[len(op_key):].strip()
-                        result, expr = line_content.split("=", 1)
-                        tokens.append({
-                            "type": "variableAssignment",
-                            "name": result.strip(),
-                            "value": expr.strip()
-                        })
+                        # Assuming syntax like: slideUp(total) = x + y
+                        if '(' in line_content and ')' in line_content:
+                            # Extract variable name inside parentheses
+                            var_start = line_content.find('(') + 1
+                            var_end = line_content.find(')')
+                            var_name = line_content[var_start:var_end].strip()
+                            expr = line_content.split("=", 1)[1].strip()
+                            tokens.append({
+                                "type": "variableAssignment",
+                                "name": var_name,
+                                "value": f"x {op_symbol} y"  # Example, adjust as needed
+                            })
+                        else:
+                            # Handle other possible syntaxes
+                            var_name, expr = line_content.split("=", 1)
+                            tokens.append({
+                                "type": "variableAssignment",
+                                "name": var_name.strip(),
+                                "value": expr.strip()
+                            })
                         break
                 i += 1
 
