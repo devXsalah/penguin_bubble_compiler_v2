@@ -35,6 +35,10 @@
   
 - **Comprehensive Testing:** 
   - Unit tests for each compiler component ensuring reliability.
+```bash    
+python -m unittest tests/test_compiler.py
+```
+
 
 - **Extensible Design:** 
   - Easily add new commands and features.
@@ -59,8 +63,6 @@
   -     ├── test_parser.py
   -     ├── test_code_generator.py
   -     └── test_compiler.py
-
-
 
 
 **Explanation of Components:**
