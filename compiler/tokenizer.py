@@ -1,71 +1,25 @@
-#Purpose: 
-# Implements the tokenizer (lexer), 
-# responsible for converting raw .pg 
-# source code into a structured list of tokens based on defined token types.
+# compiler/tokenizer.py
 
 """
-    Explanation:
+tokenizer.py
 
-    The Tokenizer (Lexer) is responsible for converting raw `.pg` source code into a structured list of tokens. Each token represents a syntactic element of the language, facilitating the subsequent code generation process. The Tokenizer handles various command types, variable assignments, and arithmetic operations, ensuring that the compiled Python code accurately reflects the intended logic.
+Purpose:
+Implements the tokenizer (lexer), responsible for converting raw .pg
+source code into a structured list of tokens based on defined token types.
 
-    Key Functionalities:
-
-    1. **Case-Insensitive Parsing:**
-       - Recognizes commands regardless of their case (e.g., `KEEP_WALKING`, `keep_walking`, `Keep_Walking` are all valid).
-       - Ensures flexibility in the source code's formatting.
-
-    2. **Command Recognition:**
-       - **Print Statements (`penguinSay`):** Parses lines starting with `penguinSay` to generate `print()` statements.
-       - **Input Handling (`penguinTake`):** Parses lines starting with `penguinTake` to generate assignments using the `dynamic_input` function.
-       - **Control Structures:**
-         - **While Loops (`KEEP_WALKING`):** Parses `KEEP_WALKING` commands followed by a condition to generate `while` loops.
-         - **If Statements (`PENGUIN_IF`):** Parses `PENGUIN_IF` commands followed by a condition to generate `if` statements.
-         - **Elif Statements (`PENGUIN_WHAT_ABOUT`):** Parses `PENGUIN_WHAT_ABOUT` commands followed by a condition to generate `elif` statements.
-         - **Else Statements (`PENGUIN_ELSE`):** Parses `PENGUIN_ELSE` commands to generate `else` statements.
-
-    3. **Function Definitions (`penguinDo`):**
-       - Parses `penguinDo` commands to define Python functions.
-       - Extracts function names and parameters.
-       - Handles nested blocks within function definitions.
-
-    4. **Variable Assignments:**
-       - Recognizes and parses variable assignments (e.g., `x = 10`).
-       - Differentiates between standard assignments and those involving custom arithmetic operations.
-
-    5. **Arithmetic Operations:**
-       - Handles custom arithmetic operations like `slideUp`, `slideDown`, `penguinBoost`, `givePenguins`, and `snowball`.
-       - Maps these custom operations to standard Python arithmetic operators (`+`, `-`, `*`, `/`, `**`).
-       - Parses expressions involving these operations to generate accurate Python assignments.
-
-    6. **Return Statements (`returnIce`):**
-       - Parses `returnIce` commands to generate Python `return` statements within functions.
-
-    7. **Recursive Tokenization for Nested Blocks:**
-       - Handles nested control structures and function definitions by recursively tokenizing indented blocks.
-       - Ensures that the hierarchical structure of the source code is accurately represented in the token list.
-
-    8. **Error Handling:**
-       - Silently skips unrecognized or malformed lines without interrupting the tokenization process.
-       - This can be enhanced to include logging or raising exceptions for better debugging and feedback.
-
-    9. **Consistent Token Structure:**
-       - Ensures that all tokens use the `TokenType` enums for consistency.
-       - Facilitates seamless interaction with the `CodeGenerator`.
-
-    10. **Indentation Handling:**
-        - Recognizes both spaces and tabs for indentation.
-        - Strips leading indentation to correctly parse the content of each line.
-
-    11. **Extensibility:**
-        - Designed to easily incorporate additional command types and their corresponding parsing logic as the language evolves.
-
-    Usage:
-    - Initialize an instance of `Tokenizer`.
-    - Call the `tokenize` method with the raw `.pg` source code as input.
-    - Receive a list of structured tokens representing the syntactic elements of the source code.
+Key Points:
+- No external libraries are used (like re).
+- For indentation, we use unindent_line from utils.py.
+- Arithmetic operations produce operator-specific tokens:
+  slideUp -> SLIDE_UP,
+  slideDown -> SLIDE_DOWN,
+  penguinBoost -> PENGUIN_BOOST,
+  givePenguins -> GIVE_PENGUINS,
+  snowball -> SNOWBALL
 """
 
 from compiler.tokens import TokenType
+from compiler.utils import unindent_line
 
 class Tokenizer:
     def __init__(self):
@@ -75,216 +29,300 @@ class Tokenizer:
         tokens = []
         lines = code.split("\n")
         i = 0
+
         while i < len(lines):
             line = lines[i].rstrip()
-
             if not line.strip():
                 i += 1
                 continue
 
             stripped_line = line.strip()
+            upper_line = stripped_line.upper()
 
-            # Match penguinSay
-            if stripped_line.upper().startswith("PENGUINSAY"):
-                value = stripped_line[len("PENGUINSAY"):].strip()
-                tokens.append({"type": TokenType.PENGUIN_SAY, "value": value})
+            # -------------------------------------------------------
+            # 1) penguinSay: e.g. penguinSay "Hello World"
+            # -------------------------------------------------------
+            if upper_line.startswith("PENGUINSAY"):
+                # Grab everything after 'penguinSay'
+                # e.g. penguinSay "Hello World!"
+                value = stripped_line[len("penguinSay"):].strip()
+                tokens.append({
+                    "type": TokenType.PENGUIN_SAY,
+                    "value": value
+                })
                 i += 1
 
-            # Match penguinTake
-            elif stripped_line.upper().startswith("PENGUINTAKE"):
-                # Assuming syntax: penguinTake(name) "prompt"
-                # Extract name
-                name_start = stripped_line.find('(') + 1
-                name_end = stripped_line.find(')')
-                if name_start == 0 or name_end == -1:
-                    # Invalid syntax, skip
+            # -------------------------------------------------------
+            # 2) penguinTake: e.g. penguinTake(num1) "Enter value: "
+            # -------------------------------------------------------
+            elif upper_line.startswith("PENGUINTAKE"):
+                # Syntax: penguinTake(name) "prompt text"
+                paren_open = stripped_line.find("(")
+                paren_close = stripped_line.find(")")
+
+                if paren_open == -1 or paren_close == -1 or paren_close < paren_open:
+                    # Invalid syntax -> skip
                     i += 1
                     continue
-                name = stripped_line[name_start:name_end].strip()
 
-                # Extract prompt
-                prompt_start = stripped_line.find('"')
-                if prompt_start != -1:
-                    prompt_end = stripped_line.rfind('"')
-                    prompt = stripped_line[prompt_start:prompt_end+1]  # Include quotes
-                else:
-                    # Prompt is an expression
-                    # Assuming prompt follows penguinTake(name) without quotes
-                    prompt = stripped_line.split(')', 1)[1].strip()
-                tokens.append({"type": TokenType.PENGUIN_TAKE, "name": name, "prompt": prompt})
-                i += 1
+                name = stripped_line[paren_open + 1 : paren_close].strip()
 
-            # Match KEEP_WALKING
-            elif stripped_line.upper().startswith("KEEP_WALKING"):
-                # Syntax: KEEP_WALKING condition
-                condition = stripped_line[len("KEEP_WALKING"):].strip()
-
-                # Collect the block lines
-                block_lines = []
-                i += 1
-                while i < len(lines) and (lines[i].startswith('    ') or lines[i].startswith('\t')):
-                    line_content = lines[i][4:] if lines[i].startswith('    ') else lines[i][1:]
-                    block_lines.append(line_content)
-                    i += 1
-                # Tokenize the block recursively
-                block_tokens = self.tokenize('\n'.join(block_lines))
-                tokens.append({"type": TokenType.KEEP_WALKING, "condition": condition, "block": block_tokens})
-
-            # Match PENGUIN_IF
-            elif stripped_line.upper().startswith("PENGUIN_IF"):
-                # Syntax: PENGUIN_IF condition
-                condition = stripped_line[len("PENGUIN_IF"):].strip()
-
-                # Collect the block lines
-                block_lines = []
-                i += 1
-                while i < len(lines) and (lines[i].startswith('    ') or lines[i].startswith('\t')):
-                    line_content = lines[i][4:] if lines[i].startswith('    ') else lines[i][1:]
-                    block_lines.append(line_content)
-                    i += 1
-                # Tokenize the block recursively
-                block_tokens = self.tokenize('\n'.join(block_lines))
-                tokens.append({"type": TokenType.PENGUIN_IF, "condition": condition, "block": block_tokens})
-
-            # Match PENGUIN_WHAT_ABOUT (elif)
-            elif stripped_line.upper().startswith("PENGUIN_WHATABOUT") or stripped_line.upper().startswith("PENGUIN_WHAT_ABOUT"):
-                # Handle possible variations in command name
-                # Assuming 'PENGUIN_WHATABOUT' or 'PENGUIN_WHAT_ABOUT'
-
-                # Find the exact command string
-                if "WHATABOUT" in stripped_line.upper():
-                    command_length = len("PENGUIN_WHATABOUT")
-                elif "WHAT_ABOUT" in stripped_line.upper():
-                    command_length = len("PENGUIN_WHAT_ABOUT")
-                else:
-                    command_length = len("PENGUIN_WHATABOUT")
-
-                # Syntax: PENGUIN_WHAT_ABOUT condition
-                condition = stripped_line[command_length:].strip()
-
-                # Collect the block lines
-                block_lines = []
-                i += 1
-                while i < len(lines) and (lines[i].startswith('    ') or lines[i].startswith('\t')):
-                    line_content = lines[i][4:] if lines[i].startswith('    ') else lines[i][1:]
-                    block_lines.append(line_content)
-                    i += 1
-                # Tokenize the block recursively
-                block_tokens = self.tokenize('\n'.join(block_lines))
-                tokens.append({"type": TokenType.PENGUIN_WHAT_ABOUT, "condition": condition, "block": block_tokens})
-
-            # Match PENGUIN_ELSE
-            elif stripped_line.upper().startswith("PENGUIN_ELSE"):
-                # Syntax: PENGUIN_ELSE
-                # No condition
-
-                # Collect the block lines
-                block_lines = []
-                i += 1
-                while i < len(lines) and (lines[i].startswith('    ') or lines[i].startswith('\t')):
-                    line_content = lines[i][4:] if lines[i].startswith('    ') else lines[i][1:]
-                    block_lines.append(line_content)
-                    i += 1
-                # Tokenize the block recursively
-                block_tokens = self.tokenize('\n'.join(block_lines))
-                tokens.append({"type": TokenType.PENGUIN_ELSE, "block": block_tokens})
-
-            # Match penguinDo
-            elif stripped_line.upper().startswith("PENGUINDO"):
-                # Assuming syntax: penguinDo(name, params) or penguinDo(name(params))
-                # For the test case, not relevant.
-
-                header = stripped_line
-
-                # Collect the block lines
-                block_lines = []
-                i += 1
-                while i < len(lines) and (lines[i].startswith('    ') or lines[i].startswith('\t')):
-                    line_content = lines[i][4:] if lines[i].startswith('    ') else lines[i][1:]
-                    block_lines.append(line_content)
-                    i += 1
-                block = '\n'.join(block_lines)
-
-                # Extract name and params
-                # Assuming syntax: penguinDo(name, params) or penguinDo(name(params))
-                # Need to extract name and params accordingly
-
-                # Check for '('
-                name_start = stripped_line.find('(') + 1
-                name_end = stripped_line.find(')')
-                if name_start > 0 and name_end > name_start:
-                    name_params = stripped_line[name_start:name_end].strip()
-                    if ',' in name_params:
-                        name, params = name_params.split(',', 1)
-                        name = name.strip()
-                        params = params.strip()
+                # Extract prompt in quotes (if present)
+                prompt = ""
+                quote_start = stripped_line.find('"', paren_close)
+                if quote_start != -1:
+                    quote_end = stripped_line.rfind('"')
+                    if quote_end > quote_start:
+                        prompt = stripped_line[quote_start : quote_end + 1]
                     else:
-                        # Assume params are in another format
-                        name = name_params
-                        params = ""
+                        prompt = ""
                 else:
-                    # No params
-                    name = stripped_line[len("PENGUINDO"):].strip()
-                    params = ""
+                    # If no quotes, everything after parenthesis is the prompt
+                    remainder = stripped_line[paren_close + 1:].strip()
+                    prompt = remainder if remainder else ""
 
-                # Tokenize the block recursively
-                block_tokens = self.tokenize(block)
-                tokens.append({"type": TokenType.PENGUIN_DO, "name": name, "params": params, "block": block_tokens})
-
-            # Match Variable Assignment
-            elif "=" in line and not any(stripped_line.upper().startswith(op.upper()) for op in ["SLIDEUP", "SLIDEDOWN", "PENGUINBOOST", "GIVEPENGUINS", "SNOWBALL"]):
-                name, value = line.strip().split("=", 1)
-                tokens.append({"type": TokenType.VARIABLE_ASSIGNMENT, "name": name.strip(), "value": value.strip()})
+                tokens.append({
+                    "type": TokenType.PENGUIN_TAKE,
+                    "name": name,
+                    "prompt": prompt
+                })
                 i += 1
 
-            # Match arithmetic operations
-            elif any(stripped_line.upper().startswith(op.upper()) for op in ["SLIDEUP", "SLIDEDOWN", "PENGUINBOOST", "GIVEPENGUINS", "SNOWBALL"]):
-                # Handle arithmetic operations as variable assignments
-                op_map = {
-                    "SLIDEUP": "+",
-                    "SLIDEDOWN": "-",
-                    "PENGUINBOOST": "*",
-                    "GIVEPENGUINS": "/",
-                    "SNOWBALL": "**"
-                }
-                matched_op = None
-                for op_key, op_symbol in op_map.items():
-                    if stripped_line.upper().startswith(op_key):
-                        matched_op = (op_key, op_symbol)
+            # -------------------------------------------------------
+            # 3) penguinDo: e.g. penguinDo(addOperation)(x, y)
+            # -------------------------------------------------------
+            elif upper_line.startswith("PENGUINDO"):
+                header = stripped_line[len("penguinDo"):].strip()
+
+                # Extract function name and params
+                name, params = self._extract_function_def(header)
+
+                # Gather indented block
+                block_lines = []
+                i += 1
+                while i < len(lines):
+                    next_line = lines[i]
+                    if next_line.startswith("    ") or next_line.startswith("\t"):
+                        block_lines.append(unindent_line(next_line))
+                        i += 1
+                    else:
                         break
-                if matched_op:
-                    op_key, op_symbol = matched_op
-                    line_content = stripped_line[len(op_key):].strip()
-                    # Assuming syntax like: SLIDEUP(total) = x + y
-                    # So, name is within parentheses
-                    if '(' in line_content and ')' in line_content:
-                        var_start = line_content.find('(') + 1
-                        var_end = line_content.find(')')
-                        var_name = line_content[var_start:var_end].strip()
-                        expr = line_content.split("=", 1)[1].strip()
-                        tokens.append({
-                            "type": TokenType.VARIABLE_ASSIGNMENT,  # Use the same token type
-                            "name": var_name,
-                            "value": expr.replace(op_key, op_symbol)  # Replace custom op with symbol
-                        })
+
+                block_str = "\n".join(block_lines)
+                block_tokens = self.tokenize(block_str)
+
+                tokens.append({
+                    "type": TokenType.PENGUIN_DO,
+                    "name": name,
+                    "params": params,
+                    "block": block_tokens
+                })
+
+            # -------------------------------------------------------
+            # 4) keepWalking: e.g. keepWalking(condition)
+            # -------------------------------------------------------
+            elif upper_line.startswith("KEEP_WALKING"):
+                # Everything after 'keepWalking' is the condition
+                condition = stripped_line[len("keepWalking"):].strip()
+
+                # Gather indented block
+                block_lines = []
+                i += 1
+                while i < len(lines):
+                    next_line = lines[i]
+                    if next_line.startswith("    ") or next_line.startswith("\t"):
+                        block_lines.append(unindent_line(next_line))
+                        i += 1
                     else:
-                        # Handle other possible syntaxes
-                        if '=' in line_content:
-                            var_name, expr = line_content.split("=", 1)
-                            tokens.append({
-                                "type": TokenType.VARIABLE_ASSIGNMENT,
-                                "name": var_name.strip(),
-                                "value": expr.strip().replace(op_key, op_symbol)
-                            })
+                        break
+
+                # Recursively tokenize the block
+                block_tokens = self.tokenize("\n".join(block_lines))
+                tokens.append({
+                    "type": TokenType.KEEP_WALKING,
+                    "condition": condition,
+                    "block": block_tokens
+                })
+
+            # -------------------------------------------------------
+            # 5) penguinIf: e.g. penguinIf(condition)
+            # -------------------------------------------------------
+            elif upper_line.startswith("PENGUIN_IF"):
+                condition = stripped_line[len("penguinIf"):].strip()
+
+                # Gather indented block
+                block_lines = []
+                i += 1
+                while i < len(lines):
+                    next_line = lines[i]
+                    if next_line.startswith("    ") or next_line.startswith("\t"):
+                        block_lines.append(unindent_line(next_line))
+                        i += 1
+                    else:
+                        break
+
+                block_tokens = self.tokenize("\n".join(block_lines))
+                tokens.append({
+                    "type": TokenType.PENGUIN_IF,
+                    "condition": condition,
+                    "block": block_tokens
+                })
+
+            # -------------------------------------------------------
+            # 6) penguinWhatAbout: e.g. penguinWhatAbout(condition)
+            #    (analogous to elif)
+            # -------------------------------------------------------
+            elif (upper_line.startswith("PENGUIN_WHATABOUT") or
+                  upper_line.startswith("PENGUIN_WHAT_ABOUT")):
+
+                # Distinguish either 'WHATABOUT' or 'WHAT_ABOUT'
+                cmd_len = 0
+                if "WHATABOUT" in upper_line:
+                    cmd_len = len("PENGUIN_WHATABOUT")
+                else:
+                    cmd_len = len("PENGUIN_WHAT_ABOUT")
+
+                condition = stripped_line[cmd_len:].strip()
+
+                # Gather indented block
+                block_lines = []
+                i += 1
+                while i < len(lines):
+                    next_line = lines[i]
+                    if next_line.startswith("    ") or next_line.startswith("\t"):
+                        block_lines.append(unindent_line(next_line))
+                        i += 1
+                    else:
+                        break
+
+                block_tokens = self.tokenize("\n".join(block_lines))
+                tokens.append({
+                    "type": TokenType.PENGUIN_WHAT_ABOUT,
+                    "condition": condition,
+                    "block": block_tokens
+                })
+
+            # -------------------------------------------------------
+            # 7) penguinElse: e.g. penguinElse
+            # -------------------------------------------------------
+            elif upper_line.startswith("PENGUIN_ELSE"):
+                # Gather indented block
+                block_lines = []
+                i += 1
+                while i < len(lines):
+                    next_line = lines[i]
+                    if next_line.startswith("    ") or next_line.startswith("\t"):
+                        block_lines.append(unindent_line(next_line))
+                        i += 1
+                    else:
+                        break
+
+                block_tokens = self.tokenize("\n".join(block_lines))
+                tokens.append({
+                    "type": TokenType.PENGUIN_ELSE,
+                    "block": block_tokens
+                })
+
+            # -------------------------------------------------------
+            # 8) returnIce: e.g. returnIce value
+            # -------------------------------------------------------
+            elif upper_line.startswith("RETURNICE"):
+                value = stripped_line[len("returnIce"):].strip()
+                tokens.append({
+                    "type": TokenType.RETURN_ICE,
+                    "value": value
+                })
                 i += 1
 
-            # Match returnIce
-            elif stripped_line.upper().startswith("RETURNICE"):
-                value = stripped_line[len("RETURNICE"):].strip()
-                tokens.append({"type": TokenType.RETURN_ICE, "value": value})
+            # -------------------------------------------------------
+            # 9) break: e.g. break
+            # -------------------------------------------------------
+            elif stripped_line == "break":
+                tokens.append({
+                    "type": TokenType.PENGUIN_BREAK
+                })
+                i += 1
+
+            # -------------------------------------------------------
+            # 10) Custom arithmetic lines:
+            #     slideUp(result) = num1 slideUp num2
+            #     slideDown(result) = x slideDown y
+            #     etc.
+            # -------------------------------------------------------
+            elif (upper_line.startswith("SLIDEUP(") or
+                  upper_line.startswith("SLIDEDOWN(") or
+                  upper_line.startswith("PENGUINBOOST(") or
+                  upper_line.startswith("GIVEPENGUINS(") or
+                  upper_line.startswith("SNOWBALL(")):
+
+                if upper_line.startswith("SLIDEUP("):
+                    op_type = TokenType.SLIDE_UP
+                elif upper_line.startswith("SLIDEDOWN("):
+                    op_type = TokenType.SLIDE_DOWN
+                elif upper_line.startswith("PENGUINBOOST("):
+                    op_type = TokenType.PENGUIN_BOOST
+                elif upper_line.startswith("GIVEPENGUINS("):
+                    op_type = TokenType.GIVE_PENGUINS
+                else:  # SNOWBALL(
+                    op_type = TokenType.SNOWBALL
+
+                # Extract target name inside parentheses
+                paren_open = stripped_line.find("(")
+                paren_close = stripped_line.find(")")
+                if paren_open == -1 or paren_close == -1 or paren_close < paren_open:
+                    i += 1
+                    continue
+
+                target_var = stripped_line[paren_open + 1 : paren_close].strip()
+
+                # Find '=' to split out the expression
+                eq_index = stripped_line.find("=")
+                if eq_index == -1:
+                    i += 1
+                    continue
+
+                expression = stripped_line[eq_index + 1:].strip()
+                tokens.append({
+                    "type": op_type,
+                    "target": target_var,
+                    "expression": expression
+                })
                 i += 1
 
             else:
-                # Handle other lines or skip
+                # Unrecognized or leftover line -> skip
                 i += 1
+
         return tokens
+
+    # -------------------------------------------------------------------
+    # Helper function to extract function name and parameters
+    # from a string like "addOperation)(x, y)"
+    # -------------------------------------------------------------------
+    def _extract_function_def(self, header_str):
+        name = ""
+        params = ""
+
+        # Handle multiple parentheses, e.g., "addOperation)(x, y)"
+        first_paren_open = header_str.find('(')
+        first_paren_close = header_str.find(')', first_paren_open)
+
+        if first_paren_open != -1 and first_paren_close != -1:
+            # Extract function name
+            name = header_str[first_paren_open + 1 : first_paren_close].strip()
+
+            # Look for second set of parentheses for parameters
+            second_paren_open = header_str.find('(', first_paren_close)
+            second_paren_close = header_str.find(')', second_paren_open)
+
+            if second_paren_open != -1 and second_paren_close != -1:
+                params = header_str[second_paren_open + 1 : second_paren_close].strip()
+        else:
+            # Alternative syntax: "addOperation, x, y"
+            parts = [x.strip() for x in header_str.split(',')]
+            if len(parts) > 0:
+                name = parts[0]
+                if len(parts) > 1:
+                    params = ", ".join(parts[1:])
+
+        return name, params

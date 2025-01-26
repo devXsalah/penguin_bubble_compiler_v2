@@ -1,0 +1,64 @@
+penguinSay "Welcome to the PenguinBubble Calculator!"
+
+penguinDo(addOperation)(x, y)
+    returnIce x slideUp y
+
+penguinDo(subOperation)(x, y)
+    returnIce x slideDown y
+
+penguinDo(mulOperation)(x, y)
+    returnIce x penguinBoost y
+
+penguinDo(divOperation)(x, y)
+    penguinIf(y == 0)
+        penguinSay "Error: Division by zero is not allowed."
+        returnIce None
+    penguinElse
+        returnIce x givePenguins y
+
+penguinDo(powOperation)(x, y)
+    returnIce x snowball y
+
+keepWalking(True)
+    penguinSay "Choose an operation:"
+    penguinSay "1 -> Addition"
+    penguinSay "2 -> Subtraction"
+    penguinSay "3 -> Multiplication"
+    penguinSay "4 -> Division"
+    penguinSay "5 -> Exponentiation"
+    penguinSay "6 -> Exit"
+
+    penguinTake(choice) "Enter your choice: "
+
+    penguinIf(choice == 6)
+        penguinSay "Exiting the calculator. Goodbye!"
+        break
+
+    penguinTake(num1) "Enter the first number: "
+    penguinTake(num2) "Enter the second number: "
+
+    penguinIf(choice == 1)
+        slideUp(result) = num1 slideUp num2
+        penguinSay "Result (inline op): " + str(result)
+        # Alternatively, calling the function:
+        # slideUp(funcResult) = addOperation(num1, num2)
+        # penguinSay "Result (using function call): " + str(funcResult)
+
+    penguinWhatAbout(choice == 2)
+        slideDown(result) = num1 slideDown num2
+        penguinSay "Result: " + str(result)
+
+    penguinWhatAbout(choice == 3)
+        penguinBoost(result) = num1 penguinBoost num2
+        penguinSay "Result: " + str(result)
+
+    penguinWhatAbout(choice == 4)
+        givePenguins(result) = num1 givePenguins num2
+        penguinSay "Result: " + str(result)
+
+    penguinWhatAbout(choice == 5)
+        snowball(result) = num1 snowball num2
+        penguinSay "Result: " + str(result)
+
+    penguinElse
+        penguinSay "Invalid choice. Please try again."

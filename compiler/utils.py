@@ -1,17 +1,7 @@
-#Purpose: 
-# Contains utility functions that support various parts of the compiler, 
-# such as indentation handling and error formatting.
-
 """
-Explanation:
-
-indent_code Function:
-Purpose: Adds indentation to each line of a given code block.
-Parameters:
-code: The code string to indent.
-level: The number of indentation levels (default is 1).
-indent_str: The string used for indentation (default is 4 spaces).
-Usage: Ensures that blocks like function bodies, loops, and conditionals are properly indented in the generated Python code.
+Purpose:
+Contains utility functions that support various parts of the compiler,
+such as indentation handling and error formatting.
 """
 
 def indent_code(code, level=1, indent_str="    "):
@@ -24,4 +14,31 @@ def indent_code(code, level=1, indent_str="    "):
     :return: The indented code string.
     """
     indentation = indent_str * level
-    return '\n'.join([indentation + line if line else line for line in code.split('\n')])
+    lines = code.split('\n')
+    indented_lines = []
+    for line in lines:
+        # Only indent non-empty lines
+        if line.strip():
+            indented_lines.append(indentation + line)
+        else:
+            indented_lines.append(line)
+    return '\n'.join(indented_lines)
+
+
+def unindent_line(line, indent_str="    "):
+    """
+    Removes one level of indentation (4 spaces or 1 tab) from the given line,
+    if present.
+    
+    :param line: A single line of code to unindent.
+    :param indent_str: The string used for indentation (default is 4 spaces).
+    :return: The unindented line (if it was indented), otherwise the original line.
+    """
+    if line.startswith(indent_str):
+        # Remove 4 spaces
+        return line[len(indent_str):]
+    elif line.startswith("\t"):
+        # Remove a single tab
+        return line[1:]
+    else:
+        return line

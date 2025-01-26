@@ -1,15 +1,7 @@
-#Purpose: 
-# Defines the various token types used by the tokenizer and parser. 
-# Using constants ensures consistency across the compiler.
-
-"""
-Explanation:
-
-TokenType Class: Contains string constants representing each token type in the PenguinBubble language.
-Extensibility: Easily add new token types as the language evolves by extending this class.
-"""
+# compiler/tokens.py
 
 class TokenType:
+    # Existing tokens...
     PENGUIN_SAY = "penguinSay"
     PENGUIN_TAKE = "penguinTake"
     KEEP_WALKING = "keepWalking"
@@ -17,5 +9,12 @@ class TokenType:
     PENGUIN_WHAT_ABOUT = "penguinWhatAbout"
     PENGUIN_ELSE = "penguinElse"
     PENGUIN_DO = "penguinDo"
-    VARIABLE_ASSIGNMENT = "variableAssignment"
     RETURN_ICE = "returnIce"
+    
+    # Operators
+    SLIDE_UP = "slideUp"                   
+    SLIDE_DOWN = "slideDown"               
+    PENGUIN_BOOST = "penguinBoost"         
+    GIVE_PENGUINS = "givePenguins"         
+    SNOWBALL = "snowball"                  
+    PENGUIN_BREAK = "penguinBreak"         # To handle 'break' statements
