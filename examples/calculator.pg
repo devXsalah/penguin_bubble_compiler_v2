@@ -10,11 +10,7 @@ penguinDo(mulOperation)(x, y)
     returnIce x penguinBoost y
 
 penguinDo(divOperation)(x, y)
-    penguinIf(y == 0)
-        penguinSay "Error: Division by zero is not allowed."
-        returnIce None
-    penguinElse
-        returnIce x givePenguins y
+    returnIce x givePenguins y
 
 penguinDo(powOperation)(x, y)
     returnIce x snowball y
@@ -32,32 +28,29 @@ keepWalking(True)
 
     penguinIf(choice == 6)
         penguinSay "Exiting the calculator. Goodbye!"
-        break
+        penguinBreak
 
     penguinTake(num1) "Enter the first number: "
     penguinTake(num2) "Enter the second number: "
 
     penguinIf(choice == 1)
-        slideUp(result) = num1 slideUp num2
-        penguinSay "Result (inline op): " + str(result)
-        # Alternatively, calling the function:
-        # slideUp(funcResult) = addOperation(num1, num2)
-        # penguinSay "Result (using function call): " + str(funcResult)
+        returnIce result = addOperation(num1, num2)
+        penguinSay "Result: " + str(result)
 
     penguinWhatAbout(choice == 2)
-        slideDown(result) = num1 slideDown num2
+        returnIce result = subOperation(num1, num2)
         penguinSay "Result: " + str(result)
 
     penguinWhatAbout(choice == 3)
-        penguinBoost(result) = num1 penguinBoost num2
+        returnIce result = mulOperation(num1, num2)
         penguinSay "Result: " + str(result)
 
     penguinWhatAbout(choice == 4)
-        givePenguins(result) = num1 givePenguins num2
+        returnIce result = divOperation(num1, num2)
         penguinSay "Result: " + str(result)
 
     penguinWhatAbout(choice == 5)
-        snowball(result) = num1 snowball num2
+        returnIce result = powOperation(num1, num2)
         penguinSay "Result: " + str(result)
 
     penguinElse
