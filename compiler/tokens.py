@@ -18,3 +18,4 @@ class TokenType:
     GIVE_PENGUINS = "givePenguins"         
     SNOWBALL = "snowball"                  
     PENGUIN_BREAK = "penguinBreak"         # To handle 'break' statements
+    ICE_BUCKET= "iceBucket"

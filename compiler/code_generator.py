@@ -91,6 +91,18 @@ class CodeGenerator:
                 )
 
             # -------------------------------------------
+            # 4) Var statement (iceBucket)
+            # -------------------------------------------
+            elif ttype == TokenType.ICE_BUCKET:
+                # Replace custom operators in the value
+                expression = self._replace_custom_ops(token["value"])
+                # Example output:  return x + y
+                line = f'{expression}'
+                compiled_code.append(
+                    indent_code(line, level=self.indentation_level, indent_str=self.indentation_str)
+                )
+                
+            # -------------------------------------------
             # 5) Control Structures (while/if/elif/else)
             # -------------------------------------------
             elif ttype in [

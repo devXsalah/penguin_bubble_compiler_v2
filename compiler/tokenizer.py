@@ -32,6 +32,8 @@ class Tokenizer:
 
         while i < len(lines):
             line = lines[i].rstrip()
+            # current_ident = len(line) - len(line.strip())
+            
             if not line.strip():
                 i += 1
                 continue
@@ -121,7 +123,7 @@ class Tokenizer:
             # -------------------------------------------------------
             # 4) keepWalking: e.g. keepWalking(condition)
             # -------------------------------------------------------
-            elif upper_line.startswith("KEEP_WALKING"):
+            elif upper_line.startswith("KEEPWALKING"):
                 # Everything after 'keepWalking' is the condition
                 condition = stripped_line[len("keepWalking"):].strip()
 
@@ -147,7 +149,7 @@ class Tokenizer:
             # -------------------------------------------------------
             # 5) penguinIf: e.g. penguinIf(condition)
             # -------------------------------------------------------
-            elif upper_line.startswith("PENGUIN_IF"):
+            elif upper_line.startswith("PENGUINIF"):
                 condition = stripped_line[len("penguinIf"):].strip()
 
                 # Gather indented block
@@ -172,13 +174,13 @@ class Tokenizer:
             # 6) penguinWhatAbout: e.g. penguinWhatAbout(condition)
             #    (analogous to elif)
             # -------------------------------------------------------
-            elif (upper_line.startswith("PENGUIN_WHATABOUT") or
-                  upper_line.startswith("PENGUIN_WHAT_ABOUT")):
+            elif (upper_line.startswith("PENGUINWHATABOUT") or
+                  upper_line.startswith("PENGUINWHATABOUT")):
 
                 # Distinguish either 'WHATABOUT' or 'WHAT_ABOUT'
                 cmd_len = 0
                 if "WHATABOUT" in upper_line:
-                    cmd_len = len("PENGUIN_WHATABOUT")
+                    cmd_len = len("PENGUINWHATABOUT")
                 else:
                     cmd_len = len("PENGUIN_WHAT_ABOUT")
 
@@ -205,7 +207,7 @@ class Tokenizer:
             # -------------------------------------------------------
             # 7) penguinElse: e.g. penguinElse
             # -------------------------------------------------------
-            elif upper_line.startswith("PENGUIN_ELSE"):
+            elif upper_line.startswith("PENGUINELSE"):
                 # Gather indented block
                 block_lines = []
                 i += 1
@@ -233,6 +235,18 @@ class Tokenizer:
                     "value": value
                 })
                 i += 1
+                
+            # -------------------------------------------------------
+            # 8) iceBucket:
+            # -------------------------------------------------------
+            elif upper_line.startswith("ICEBUCKET"):
+                value = stripped_line[len("ICEBUCKET"):].strip()
+                tokens.append({
+                    "type": TokenType.ICE_BUCKET,
+                    "value": value
+                })
+                i += 1
+
 
             # -------------------------------------------------------
             # 9) break: e.g. break
@@ -292,6 +306,7 @@ class Tokenizer:
             else:
                 # Unrecognized or leftover line -> skip
                 i += 1
+        print(tokens)
 
         return tokens
 

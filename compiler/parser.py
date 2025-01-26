@@ -40,6 +40,9 @@ class Parser:
             elif token_type == TokenType.RETURN_ICE:
                 if "value" not in token:
                     raise SyntaxError("Missing 'value' in returnIce statement.")
+            elif token_type == TokenType.ICE_BUCKET:
+                if "value" not in token:
+                    raise SyntaxError("Missing 'value' in iceBucket statement.")
 
             elif token_type in [
                 TokenType.SLIDE_UP, 

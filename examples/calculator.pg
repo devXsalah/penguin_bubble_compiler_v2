@@ -1,19 +1,19 @@
 penguinSay "Welcome to the PenguinBubble Calculator!"
 
 penguinDo(addOperation)(x, y)
-    returnIce x slideUp y
+    iceBucket x slideUp y
 
 penguinDo(subOperation)(x, y)
-    returnIce x slideDown y
+    iceBucket x slideDown y
 
 penguinDo(mulOperation)(x, y)
-    returnIce x penguinBoost y
+    iceBucket x penguinBoost y
 
 penguinDo(divOperation)(x, y)
-    returnIce x givePenguins y
+    iceBucket x givePenguins y
 
 penguinDo(powOperation)(x, y)
-    returnIce x snowball y
+    iceBucket x snowball y
 
 keepWalking(True)
     penguinSay "Choose an operation:"
@@ -34,23 +34,23 @@ keepWalking(True)
     penguinTake(num2) "Enter the second number: "
 
     penguinIf(choice == 1)
-        returnIce result = addOperation(num1, num2)
+        iceBucket result = addOperation(num1, num2)
         penguinSay "Result: " + str(result)
 
     penguinWhatAbout(choice == 2)
-        returnIce result = subOperation(num1, num2)
+        iceBucket result = subOperation(num1, num2)
         penguinSay "Result: " + str(result)
 
     penguinWhatAbout(choice == 3)
-        returnIce result = mulOperation(num1, num2)
+        iceBucket result = mulOperation(num1, num2)
         penguinSay "Result: " + str(result)
 
     penguinWhatAbout(choice == 4)
-        returnIce result = divOperation(num1, num2)
+        iceBucket result = divOperation(num1, num2)
         penguinSay "Result: " + str(result)
 
     penguinWhatAbout(choice == 5)
-        returnIce result = powOperation(num1, num2)
+        iceBucket result = powOperation(num1, num2)
         penguinSay "Result: " + str(result)
 
     penguinElse
