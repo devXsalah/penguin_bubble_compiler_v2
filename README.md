@@ -95,5 +95,5 @@ python -m unittest tests/test_compiler.py
 Clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/yourusername/penguin_bubble_compiler.git
-cd penguin_bubble_compiler
+git clone git https://github.com/devXsalah/penguin_bubble_compiler_v2.git
+cd penguin_bubble_compiler_v2
