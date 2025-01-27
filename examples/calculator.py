@@ -30,7 +30,7 @@ while (True):
     choice = dynamic_input("Enter your choice: ")
     if (choice == 6):
         print("Exiting the calculator. Goodbye!")
-        break 
+        break
     num1 = dynamic_input("Enter the first number: ")
     num2 = dynamic_input("Enter the second number: ")
     if (choice == 1):
@@ -48,5 +48,5 @@ while (True):
     elif (choice == 5):
         result = powOperation(num1, num2)
         print("Result: " + str(result))
-    else :
+    else : 
         print("Invalid choice. Please try again.")

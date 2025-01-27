@@ -1,152 +1,115 @@
-
 """
-code_generator.py
-
 Purpose:
-Translates the list of tokens into Python code, handling structure and indentation
-of the generated code.
+Generates Python code from a list of tokens, handling syntax, structure, and indentation.
 
 Explanation:
-- penguinDo        -> Python 'def' function definitions
-- penguinSay       -> Python 'print(...)'
-- penguinTake      -> Python 'dynamic_input(...)'
-- returnIce        -> Python 'return ...' with operator replacements
-- keepWalking      -> Python 'while <condition>:'
-- penguinIf        -> Python 'if <condition>:'
-- penguinWhatAbout -> Python 'elif <condition>:'
-- penguinElse      -> Python 'else:'
-- PENGUIN_BREAK    -> Python 'break'
-- slideUp, slideDown, penguinBoost, givePenguins, snowball -> Arithmetic ops
+- penguinDo        -> Generates Python function definitions (def ...).
+- penguinSay       -> Translates to Python 'print(...)' statements.
+- penguinTake      -> Maps to 'dynamic_input(...)' for user input.
+- returnIce        -> Compiles to Python 'return ...' with custom operator replacements.
+- keepWalking      -> Converts to Python 'while <condition>:' loops.
+- penguinIf        -> Translates to Python 'if <condition>:' statements.
+- penguinWhatAbout -> Maps to Python 'elif <condition>:'.
+- penguinElse      -> Converts to Python 'else:' blocks.
+- breakIce         -> Produces Python 'break'.
+- slideUp, slideDown, penguinBoost, givePenguins, snowball -> Custom arithmetic operations.
 
+Additional Functionality:
+Handles custom operators (e.g., slideUp, snowball) by replacing them with equivalent Python operators.
 """
-from compiler.tokens import TokenType
 
+from compiler.tokens import TokenType
 
 class CodeGenerator:
     def __init__(self):
+        # Tracks current indentation level and defines indentation as four spaces
         self.indentation_level = 0
-        self.indentation_str = "    "  # Four spaces per indentation level
+        self.indentation_str = "    "
 
     def compile_tokens(self, tokens):
         """
-        Compiles a list of tokens into lines of Python code.
-        Returns a list of strings (each a line of Python code).
+        Compiles a list of tokens into Python code.
+        Returns a list of strings where each string represents a line of Python code.
         """
         compiled_code = []
-
 
         for token in tokens:
             ttype = token["type"]
 
             # -------------------------------------------
-            # 1) Function Definition (penguinDo)
+            # 1) Function Definition (penguinDo -> def)
+            # Example: def function_name(params):
             # -------------------------------------------
             if ttype == TokenType.PENGUIN_DO:
-                # Example output:  def addOperation(x, y):
                 line = f'def {token["name"]}({token["params"]}):'
-                compiled_code.append(
-                    (token["indent"]*" ")+line
-                )
+                compiled_code.append((token["indent"] * " ") + line)
 
             # -------------------------------------------
-            # 2) Print Statements (penguinSay)
+            # 2) Print Statements (penguinSay -> print)
+            # Example: print("Hello World")
             # -------------------------------------------
             elif ttype == TokenType.PENGUIN_SAY:
-                # Example output:  print("Hello World")
                 line = f'print({token["value"]})'
-                compiled_code.append(
-                    (token["indent"]*" ")+line
-                )
+                compiled_code.append((token["indent"] * " ") + line)
 
             # -------------------------------------------
-            # 3) Input (penguinTake)
+            # 3) Input Handling (penguinTake -> dynamic_input)
+            # Example: variable = dynamic_input("Enter value:")
             # -------------------------------------------
             elif ttype == TokenType.PENGUIN_TAKE:
-                # Example output:  choice = dynamic_input("Enter your choice: ")
                 line = f'{token["name"]} = dynamic_input({token["prompt"]})'
-                compiled_code.append(
-                    (token["indent"]*" ")+line
-                )
+                compiled_code.append((token["indent"] * " ") + line)
 
             # -------------------------------------------
-            # 4) Return Statements (returnIce)
+            # 4) Return Statements (returnIce -> return)
+            # Example: return x + y
             # -------------------------------------------
             elif ttype == TokenType.RETURN_ICE:
-                # Replace custom operators in the value
                 expression = self._replace_custom_ops(token["value"])
-                # Example output:  return x + y
                 line = f'return {expression}'
-                compiled_code.append(
-                    (token["indent"]*" ")+line
-                )
+                compiled_code.append((token["indent"] * " ") + line)
 
-            
             # -------------------------------------------
-            # 4) Return Statements (breakIce)
+            # 5) Break Statements (breakIce -> break)
+            # Example: break
             # -------------------------------------------
             elif ttype == TokenType.BREAKICE:
-                # Replace custom operators in the value
-                expression = self._replace_custom_ops(token["value"])
-                
-                line = f'break {expression}'
-                compiled_code.append(
-                    (token["indent"]*" ")+line
-                )
+                compiled_code.append((token["indent"] * " ") + "break")
 
-        
             # -------------------------------------------
-            # 4) Var statement (iceBucket)
+            # 6) Variable Assignment (iceBucket)
+            # Example: variable = value
             # -------------------------------------------
             elif ttype == TokenType.ICE_BUCKET:
-                # Replace custom operators in the value
                 expression = self._replace_custom_ops(token["value"])
-                line = f'{expression}'
-                compiled_code.append(
-                    (token["indent"]*" ")+line
-                )
-                
+                line = expression
+                compiled_code.append((token["indent"] * " ") + line)
+
             # -------------------------------------------
-            # 5) Control Structures (while/if/elif/else)
+            # 7) Control Structures (while/if/elif/else)
+            # - keepWalking -> while <condition>:
+            # - penguinIf   -> if <condition>:
+            # - penguinWhatAbout -> elif <condition>:
+            # - penguinElse -> else:
             # -------------------------------------------
-            elif ttype == TokenType.KEEP_WALKING:
-                # while <condition>:
-                keyword = "while"
+            elif ttype in [TokenType.KEEP_WALKING, TokenType.PENGUIN_IF, TokenType.PENGUIN_WHAT_ABOUT, TokenType.PENGUIN_ELSE]:
+                keyword_map = {
+                    TokenType.KEEP_WALKING: "while",
+                    TokenType.PENGUIN_IF: "if",
+                    TokenType.PENGUIN_WHAT_ABOUT: "elif",
+                    TokenType.PENGUIN_ELSE: "else :"
+                }
+                keyword = keyword_map[ttype]
                 condition = token.get("condition", "").strip()
-                header_line = f'{keyword} {condition}:'
-                compiled_code.append(
-                    (token["indent"]*" ")+ header_line
-                )
-            
-            elif ttype == TokenType.PENGUIN_IF:
-                # while <condition>:
-                keyword = "if"
-                condition = token.get("condition", "").strip()
-                header_line = f'{keyword} {condition}:'
-                compiled_code.append(
-                    (token["indent"]*" ")+ header_line
-                )
-                
-            elif ttype == TokenType.PENGUIN_WHAT_ABOUT:
-                # while <condition>:
-                keyword = "elif"
-                condition = token.get("condition", "").strip()
-                header_line = f'{keyword} {condition}:'
-                compiled_code.append(
-                    (token["indent"]*" ")+ header_line
-                )
-                
-            elif ttype == TokenType.PENGUIN_ELSE:
-                # while <condition>:
-                keyword = "else"
-                condition = token.get("condition", "").strip()
-                header_line = f'{keyword} {condition}:'
-                compiled_code.append(
-                    (token["indent"]*" ")+ header_line
-                )
-            
+                header_line = f'{keyword} {condition}:'.rstrip(":")
+                if ttype != TokenType.PENGUIN_ELSE:
+                    header_line += ":"
+                compiled_code.append((token["indent"] * " ") + header_line)
+
             # -------------------------------------------
-            # 6) Arithmetic Operations
-            #    (slideUp, slideDown, penguinBoost, givePenguins, snowball)
+            # 8) Arithmetic Operations
+            # Custom operators replaced with Python equivalents.
+            # Example: result = num1 + num2
             # -------------------------------------------
             elif ttype in [
                 TokenType.SLIDE_UP,
@@ -155,26 +118,22 @@ class CodeGenerator:
                 TokenType.GIVE_PENGUINS,
                 TokenType.SNOWBALL
             ]:
-                # Replace custom operators in the expression
                 expression = self._replace_custom_ops(token["expression"])
-                # Example output:  result = num1 + num2
                 line = f'{token["target"]} = {expression}'
-                compiled_code.append(
-                    (token["indent"]*" ")+line
-                )
+                compiled_code.append((token["indent"] * " ") + line)
 
+            # -------------------------------------------
+            # 9) Ignore Unrecognized Tokens
+            # -------------------------------------------
             else:
-                # Unrecognized tokens can be ignored or raise an error
-                pass
+                pass  # Unhandled tokens are ignored
 
         return compiled_code
 
-
     def _replace_custom_ops(self, expression):
         """
-        Replaces any inline custom operations (slideUp, slideDown, penguinBoost,
-        givePenguins, snowball) in the 'expression' string with their Python equivalents.
-        This is a naive string replacement approach.
+        Replaces custom operators (slideUp, slideDown, penguinBoost, givePenguins, snowball)
+        in the expression string with their equivalent Python operators (+, -, *, /, **).
         """
         replacements = {
             "slideUp": "+",
