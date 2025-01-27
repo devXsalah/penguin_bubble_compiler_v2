@@ -197,19 +197,6 @@ class Tokenizer:
                     "index" : index
                 })
 
-            # # -------------------------------------------------------
-            # # 8) returnIce: e.g. returnIce value
-            # # -------------------------------------------------------
-                
-            # elif upper_line.startswith("RETURNICE"):
-            #     # Everything after 'keepWalking' is the condition
-            #     value = stripped_line[len("returnIce"):].strip()
-
-            #     tokens.append({
-            #         "type": TokenType.RETURN_ICE,
-            #         "value": value,
-            #         "indent": current_ident
-            #     })
                 
             # -------------------------------------------------------
             # 8) iceBucket:

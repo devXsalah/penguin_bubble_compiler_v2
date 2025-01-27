@@ -33,10 +33,6 @@ class Parser:
                 if "condition" not in token:
                     raise SyntaxError(f"Missing 'condition' or 'block' in {token_type} statement.")
 
-            elif token_type == TokenType.PENGUIN_ELSE:
-                if False:
-                    raise SyntaxError("Missing 'block' in penguinElse statement.")
-
             elif token_type == TokenType.RETURN_ICE:
                 if "value" not in token:
                     raise SyntaxError("Missing 'value' in returnIce statement.")
@@ -62,9 +58,5 @@ class Parser:
                 # Handle other token types or ignore
                 pass
 
-            # Recursively parse any nested blocks
-            if "block" in token:
-                block_tokens = token.get("block", [])
-                self.parse(block_tokens)
 
         return tokens  # In this simple parser, we return tokens as-is
