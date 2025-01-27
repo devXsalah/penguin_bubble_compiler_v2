@@ -28,7 +28,6 @@ keepWalking(True)
 
     penguinIf(choice == 6)
         penguinSay "Exiting the calculator. Goodbye!"
-        penguinBreak
 
     penguinTake(num1) "Enter the first number: "
     penguinTake(num2) "Enter the second number: "

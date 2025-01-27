@@ -1,4 +1,3 @@
-# compiler/compiler.py
 
 """
 compiler.py
@@ -17,7 +16,6 @@ Explanation:
 from compiler.tokenizer import Tokenizer
 from compiler.parser import Parser
 from compiler.code_generator import CodeGenerator
-from compiler.tokens import TokenType
 
 class PenguinBubbleCompiler:
     def __init__(self):
@@ -53,15 +51,9 @@ class PenguinBubbleCompiler:
         ]
         compiled_code.extend(dynamic_input_function)
 
-        # print(tokens)
-        # # 5) Separate function tokens and other tokens
-        # function_tokens = [token for token in tokens if token["type"] == TokenType.PENGUIN_DO]
-        # other_tokens = [token for token in tokens if token["type"] != TokenType.PENGUIN_DO]
+        print(tokens)
 
-        # # 6) Compile function tokens first
-        # compiled_code.extend(self.code_generator.compile_tokens(function_tokens))
 
-        # 7) Then compile other tokens
         compiled_code.extend(self.code_generator.compile_tokens(tokens))
 
         return '\n'.join(compiled_code)
