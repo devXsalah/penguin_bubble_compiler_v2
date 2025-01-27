@@ -99,7 +99,7 @@ class Tokenizer:
             # -------------------------------------------------------
                 
             elif upper_line.startswith("RETURNICE"):
-                # Everything after 'keepWalking' is the condition
+                
                 value = stripped_line[len("returnIce"):].strip()
 
                 tokens.append({
@@ -110,6 +110,21 @@ class Tokenizer:
                 })
                 
 
+            # -------------------------------------------------------
+            # 8) breakIce
+            # -------------------------------------------------------
+                
+            elif upper_line.startswith("BREAKICE"):
+                
+                value = stripped_line[len("breakIce"):].strip()
+
+                tokens.append({
+                    "type": TokenType.BREAKICE,
+                    "value": value,
+                    "indent": current_ident,
+                    "index" : index
+                })
+                
 
             # -------------------------------------------------------
             # 3) penguinDo: e.g. penguinDo(addOperation)(x, y)
@@ -197,19 +212,6 @@ class Tokenizer:
                     "index" : index
                 })
 
-            # # -------------------------------------------------------
-            # # 8) returnIce: e.g. returnIce value
-            # # -------------------------------------------------------
-                
-            # elif upper_line.startswith("RETURNICE"):
-            #     # Everything after 'keepWalking' is the condition
-            #     value = stripped_line[len("returnIce"):].strip()
-
-            #     tokens.append({
-            #         "type": TokenType.RETURN_ICE,
-            #         "value": value,
-            #         "indent": current_ident
-            #     })
                 
             # -------------------------------------------------------
             # 8) iceBucket:
@@ -224,18 +226,7 @@ class Tokenizer:
                     "index" : index
                 })
 
-            # -------------------------------------------------------
-            # 9) break: e.g. break
-            # -------------------------------------------------------
-            elif stripped_line == "break":
-                tokens.append({
-                    "type": TokenType.PENGUIN_BREAK,
-                    "indent": current_ident,
-                    "index" : index
-                })
 
-            # print(tokens[-1])
-        # print(tokens)
 
         return tokens
 

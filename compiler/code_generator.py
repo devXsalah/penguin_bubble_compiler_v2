@@ -80,13 +80,26 @@ class CodeGenerator:
                     (token["indent"]*" ")+line
                 )
 
+            
+            # -------------------------------------------
+            # 4) Return Statements (breakIce)
+            # -------------------------------------------
+            elif ttype == TokenType.BREAKICE:
+                # Replace custom operators in the value
+                expression = self._replace_custom_ops(token["value"])
+                
+                line = f'break {expression}'
+                compiled_code.append(
+                    (token["indent"]*" ")+line
+                )
+
+        
             # -------------------------------------------
             # 4) Var statement (iceBucket)
             # -------------------------------------------
             elif ttype == TokenType.ICE_BUCKET:
                 # Replace custom operators in the value
                 expression = self._replace_custom_ops(token["value"])
-                # Example output:  return x + y
                 line = f'{expression}'
                 compiled_code.append(
                     (token["indent"]*" ")+line

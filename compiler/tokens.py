@@ -10,6 +10,7 @@ class TokenType:
     PENGUIN_ELSE = "penguinElse"
     PENGUIN_DO = "penguinDo"
     RETURN_ICE = "returnIce"
+    BREAKICE = "breakIce"
     
     # Operators
     SLIDE_UP = "slideUp"                   

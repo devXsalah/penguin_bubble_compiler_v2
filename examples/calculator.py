@@ -30,6 +30,7 @@ while (True):
     choice = dynamic_input("Enter your choice: ")
     if (choice == 6):
         print("Exiting the calculator. Goodbye!")
+        break 
     num1 = dynamic_input("Enter the first number: ")
     num2 = dynamic_input("Enter the second number: ")
     if (choice == 1):
