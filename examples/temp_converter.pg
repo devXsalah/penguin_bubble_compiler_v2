@@ -1,0 +1,30 @@
+penguinSay "Welcome to the PenguinTemp Converter!"
+
+penguinDo(celsiusToFahrenheit)(celsius)
+    returnIce celsius penguinBoost 1.8 slideUp 32
+
+penguinDo(fahrenheitToCelsius)(fahrenheit)
+    returnIce fahrenheit slideDown 32 givePenguins 1.8
+
+keepWalking(True)
+    penguinSay "Choose conversion:"
+    penguinSay "1 -> Celsius to Fahrenheit"
+    penguinSay "2 -> Fahrenheit to Celsius"
+    penguinSay "3 -> Exit"
+
+    penguinTake(choice) "Enter your choice: "
+
+    penguinIf(choice == 3)
+        penguinSay "Stay warm, goodbye!"
+        breakIce
+
+    penguinIf(choice == 1)
+        penguinTake(temp) "Enter temperature in Celsius: "
+        iceBucket result = celsiusToFahrenheit(temp)
+        penguinSay str(temp) + "°C is " + str(result) + "°F"
+    penguinWhatAbout(choice == 2)
+        penguinTake(temp) "Enter temperature in Fahrenheit: "
+        iceBucket result = fahrenheitToCelsius(temp)
+        penguinSay str(temp) + "°F is " + str(result) + "°C"
+    penguinElse
+        penguinSay "Invalid choice! Try again."
