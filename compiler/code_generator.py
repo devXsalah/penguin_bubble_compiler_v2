@@ -38,8 +38,12 @@ class CodeGenerator:
         """
         compiled_code = []
 
+        # sorted_tokens = sorted(tokens,key=lambda x: x["index"])
+        # print(sorted_tokens)
+
         for token in tokens:
             ttype = token["type"]
+            # print(token)
 
             # -------------------------------------------
             # 1) Function Definition (penguinDo)
@@ -48,15 +52,8 @@ class CodeGenerator:
                 # Example output:  def addOperation(x, y):
                 line = f'def {token["name"]}({token["params"]}):'
                 compiled_code.append(
-                    indent_code(line, level=self.indentation_level, indent_str=self.indentation_str)
+                    (token["indent"]*" ")+line
                 )
-
-                # Increase indentation for the function body
-                self.indentation_level += 1
-                block_code = self.compile_tokens(token["block"])
-                compiled_code.extend(block_code)
-                # Decrease indentation after function body
-                self.indentation_level -= 1
 
             # -------------------------------------------
             # 2) Print Statements (penguinSay)
@@ -65,7 +62,7 @@ class CodeGenerator:
                 # Example output:  print("Hello World")
                 line = f'print({token["value"]})'
                 compiled_code.append(
-                    indent_code(line, level=self.indentation_level, indent_str=self.indentation_str)
+                    (token["indent"]*" ")+line
                 )
 
             # -------------------------------------------
@@ -75,7 +72,7 @@ class CodeGenerator:
                 # Example output:  choice = dynamic_input("Enter your choice: ")
                 line = f'{token["name"]} = dynamic_input({token["prompt"]})'
                 compiled_code.append(
-                    indent_code(line, level=self.indentation_level, indent_str=self.indentation_str)
+                    (token["indent"]*" ")+line
                 )
 
             # -------------------------------------------
@@ -87,7 +84,7 @@ class CodeGenerator:
                 # Example output:  return x + y
                 line = f'return {expression}'
                 compiled_code.append(
-                    indent_code(line, level=self.indentation_level, indent_str=self.indentation_str)
+                    (token["indent"]*" ")+line
                 )
 
             # -------------------------------------------
@@ -99,21 +96,48 @@ class CodeGenerator:
                 # Example output:  return x + y
                 line = f'{expression}'
                 compiled_code.append(
-                    indent_code(line, level=self.indentation_level, indent_str=self.indentation_str)
+                    (token["indent"]*" ")+line
                 )
                 
             # -------------------------------------------
             # 5) Control Structures (while/if/elif/else)
             # -------------------------------------------
-            elif ttype in [
-                TokenType.KEEP_WALKING,
-                TokenType.PENGUIN_IF,
-                TokenType.PENGUIN_WHAT_ABOUT,
-                TokenType.PENGUIN_ELSE
-            ]:
-                control_block = self._compile_control_structure(token)
-                compiled_code.extend(control_block)
-
+            elif ttype == TokenType.KEEP_WALKING:
+                # while <condition>:
+                keyword = "while"
+                condition = token.get("condition", "").strip()
+                header_line = f'{keyword} {condition}:'
+                compiled_code.append(
+                    (token["indent"]*" ")+ header_line
+                )
+            
+            elif ttype == TokenType.PENGUIN_IF:
+                # while <condition>:
+                keyword = "if"
+                condition = token.get("condition", "").strip()
+                header_line = f'{keyword} {condition}:'
+                compiled_code.append(
+                    (token["indent"]*" ")+ header_line
+                )
+                
+            elif ttype == TokenType.PENGUIN_WHAT_ABOUT:
+                # while <condition>:
+                keyword = "elif"
+                condition = token.get("condition", "").strip()
+                header_line = f'{keyword} {condition}:'
+                compiled_code.append(
+                    (token["indent"]*" ")+ header_line
+                )
+                
+            elif ttype == TokenType.PENGUIN_ELSE:
+                # while <condition>:
+                keyword = "else"
+                condition = token.get("condition", "").strip()
+                header_line = f'{keyword} {condition}:'
+                compiled_code.append(
+                    (token["indent"]*" ")+ header_line
+                )
+            
             # -------------------------------------------
             # 6) Arithmetic Operations
             #    (slideUp, slideDown, penguinBoost, givePenguins, snowball)
@@ -130,7 +154,7 @@ class CodeGenerator:
                 # Example output:  result = num1 + num2
                 line = f'{token["target"]} = {expression}'
                 compiled_code.append(
-                    indent_code(line, level=self.indentation_level, indent_str=self.indentation_str)
+                    (token["indent"]*" ")+line
                 )
 
             # -------------------------------------------
@@ -140,7 +164,7 @@ class CodeGenerator:
                 # Example output:  break
                 line = 'break'
                 compiled_code.append(
-                    indent_code(line, level=self.indentation_level, indent_str=self.indentation_str)
+                    (token["indent"]*" ")+line
                 )
 
             else:
@@ -149,75 +173,75 @@ class CodeGenerator:
 
         return compiled_code
 
-    def _compile_control_structure(self, token):
-        """
-        Compiles control structures: keepWalking (while), penguinIf (if),
-        penguinWhatAbout (elif), penguinElse (else).
-        Adjusts indentation levels appropriately.
-        """
-        compiled_control = []
-        ttype = token["type"]
+    # def _compile_control_structure(self, token):
+    #     """
+    #     Compiles control structures: keepWalking (while), penguinIf (if),
+    #     penguinWhatAbout (elif), penguinElse (else).
+    #     Adjusts indentation levels appropriately.
+    #     """
+    #     compiled_control = []
+    #     ttype = token["type"]
 
-        if ttype == TokenType.KEEP_WALKING:
-            # while <condition>:
-            keyword = "while"
-            condition = token.get("condition", "").strip()
-            header_line = f'{keyword} {condition}:'
-            compiled_control.append(
-                indent_code(header_line, level=self.indentation_level, indent_str=self.indentation_str)
-            )
-            # Increase indentation for the block
-            self.indentation_level += 1
-            block_code = self.compile_tokens(token["block"])
-            compiled_control.extend(block_code)
-            # Decrease indentation after block
-            self.indentation_level -= 1
+    #     if ttype == TokenType.KEEP_WALKING:
+    #         # while <condition>:
+    #         keyword = "while"
+    #         condition = token.get("condition", "").strip()
+    #         header_line = f'{keyword} {condition}:'
+    #         compiled_control.append(
+    #             indent_code(header_line, level=self.indentation_level, indent_str=self.indentation_str)
+    #         )
+    #         # Increase indentation for the block
+    #         self.indentation_level += 1
+    #         block_code = self.compile_tokens(token["block"])
+    #         compiled_control.extend(block_code)
+    #         # Decrease indentation after block
+    #         self.indentation_level -= 1
 
-        elif ttype == TokenType.PENGUIN_IF:
-            # if <condition>:
-            keyword = "if"
-            condition = token.get("condition", "").strip()
-            header_line = f'{keyword} {condition}:'
-            compiled_control.append(
-                indent_code(header_line, level=self.indentation_level, indent_str=self.indentation_str)
-            )
-            # Increase indentation for the block
-            self.indentation_level += 1
-            block_code = self.compile_tokens(token["block"])
-            compiled_control.extend(block_code)
-            # Decrease indentation after block
-            self.indentation_level -= 1
+    #     elif ttype == TokenType.PENGUIN_IF:
+    #         # if <condition>:
+    #         keyword = "if"
+    #         condition = token.get("condition", "").strip()
+    #         header_line = f'{keyword} {condition}:'
+    #         compiled_control.append(
+    #             indent_code(header_line, level=self.indentation_level, indent_str=self.indentation_str)
+    #         )
+    #         # Increase indentation for the block
+    #         self.indentation_level += 1
+    #         block_code = self.compile_tokens(token["block"])
+    #         compiled_control.extend(block_code)
+    #         # Decrease indentation after block
+    #         self.indentation_level -= 1
 
-        elif ttype == TokenType.PENGUIN_WHAT_ABOUT:
-            # elif <condition>:
-            keyword = "elif"
-            condition = token.get("condition", "").strip()
-            header_line = f'{keyword} {condition}:'
-            compiled_control.append(
-                indent_code(header_line, level=self.indentation_level, indent_str=self.indentation_str)
-            )
-            # Increase indentation for the block
-            self.indentation_level += 1
-            block_code = self.compile_tokens(token["block"])
-            compiled_control.extend(block_code)
-            # Decrease indentation after block
-            self.indentation_level -= 1
+    #     elif ttype == TokenType.PENGUIN_WHAT_ABOUT:
+    #         # elif <condition>:
+    #         keyword = "elif"
+    #         condition = token.get("condition", "").strip()
+    #         header_line = f'{keyword} {condition}:'
+    #         compiled_control.append(
+    #             indent_code(header_line, level=self.indentation_level, indent_str=self.indentation_str)
+    #         )
+    #         # Increase indentation for the block
+    #         self.indentation_level += 1
+    #         block_code = self.compile_tokens(token["block"])
+    #         compiled_control.extend(block_code)
+    #         # Decrease indentation after block
+    #         self.indentation_level -= 1
 
-        elif ttype == TokenType.PENGUIN_ELSE:
-            # else:
-            keyword = "else"
-            header_line = f'{keyword}:'
-            compiled_control.append(
-                indent_code(header_line, level=self.indentation_level, indent_str=self.indentation_str)
-            )
-            # Increase indentation for the block
-            self.indentation_level += 1
-            block_code = self.compile_tokens(token["block"])
-            compiled_control.extend(block_code)
-            # Decrease indentation after block
-            self.indentation_level -= 1
+    #     elif ttype == TokenType.PENGUIN_ELSE:
+    #         # else:
+    #         keyword = "else"
+    #         header_line = f'{keyword}:'
+    #         compiled_control.append(
+    #             indent_code(header_line, level=self.indentation_level, indent_str=self.indentation_str)
+    #         )
+    #         # Increase indentation for the block
+    #         self.indentation_level += 1
+    #         block_code = self.compile_tokens(token["block"])
+    #         compiled_control.extend(block_code)
+    #         # Decrease indentation after block
+    #         self.indentation_level -= 1
 
-        return compiled_control
+    #     return compiled_control
 
     def _replace_custom_ops(self, expression):
         """

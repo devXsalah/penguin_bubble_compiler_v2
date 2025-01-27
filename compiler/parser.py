@@ -26,15 +26,15 @@ class Parser:
                     raise SyntaxError("Missing 'name' or 'prompt' in penguinTake statement.")
 
             elif token_type == TokenType.PENGUIN_DO:
-                if "name" not in token or "params" not in token or "block" not in token:
+                if "name" not in token or "params" not in token :
                     raise SyntaxError("Incomplete function definition (penguinDo).")
 
             elif token_type in [TokenType.KEEP_WALKING, TokenType.PENGUIN_IF, TokenType.PENGUIN_WHAT_ABOUT]:
-                if "condition" not in token or "block" not in token:
+                if "condition" not in token:
                     raise SyntaxError(f"Missing 'condition' or 'block' in {token_type} statement.")
 
             elif token_type == TokenType.PENGUIN_ELSE:
-                if "block" not in token:
+                if False:
                     raise SyntaxError("Missing 'block' in penguinElse statement.")
 
             elif token_type == TokenType.RETURN_ICE:

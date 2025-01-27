@@ -8,9 +8,10 @@ def dynamic_input(prompt):
         except ValueError:
             return inp
 
-print( "Welcome to the PenguinBubble Calculator!")
+print("Welcome to the PenguinBubble Calculator!")
 while (True):
-    print( "Choose an operation:")
+    print("Choose an operation:")
     choice = dynamic_input("Enter your choice: ")
-print(nguinSay "Exiting the calculator. Goodbye!")
-print(nSay "You entered choice: " + str(choice))
+    if (choice == 6):
+        print("Exiting the calculator. Goodbye!")
+    print("You entered choice: " + str(choice))

@@ -28,7 +28,6 @@ class PenguinBubbleCompiler:
     def compile(self, code):
         # 1) Tokenize the source code
         tokens = self.tokenizer.tokenize(code)
-
         # 2) Parse the tokens to validate syntax
         try:
             self.parser.parse(tokens)
@@ -54,14 +53,15 @@ class PenguinBubbleCompiler:
         ]
         compiled_code.extend(dynamic_input_function)
 
-        # 5) Separate function tokens and other tokens
-        function_tokens = [token for token in tokens if token["type"] == TokenType.PENGUIN_DO]
-        other_tokens = [token for token in tokens if token["type"] != TokenType.PENGUIN_DO]
+        # print(tokens)
+        # # 5) Separate function tokens and other tokens
+        # function_tokens = [token for token in tokens if token["type"] == TokenType.PENGUIN_DO]
+        # other_tokens = [token for token in tokens if token["type"] != TokenType.PENGUIN_DO]
 
-        # 6) Compile function tokens first
-        compiled_code.extend(self.code_generator.compile_tokens(function_tokens))
+        # # 6) Compile function tokens first
+        # compiled_code.extend(self.code_generator.compile_tokens(function_tokens))
 
         # 7) Then compile other tokens
-        compiled_code.extend(self.code_generator.compile_tokens(other_tokens))
+        compiled_code.extend(self.code_generator.compile_tokens(tokens))
 
         return '\n'.join(compiled_code)

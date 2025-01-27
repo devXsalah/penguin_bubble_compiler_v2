@@ -1,19 +1,19 @@
 penguinSay "Welcome to the PenguinBubble Calculator!"
 
 penguinDo(addOperation)(x, y)
-    iceBucket x slideUp y
+    returnIce x slideUp y
 
 penguinDo(subOperation)(x, y)
-    iceBucket x slideDown y
+    returnIce x slideDown y
 
 penguinDo(mulOperation)(x, y)
-    iceBucket x penguinBoost y
+    returnIce x penguinBoost y
 
 penguinDo(divOperation)(x, y)
-    iceBucket x givePenguins y
+    returnIce x givePenguins y
 
 penguinDo(powOperation)(x, y)
-    iceBucket x snowball y
+    returnIce x snowball y
 
 keepWalking(True)
     penguinSay "Choose an operation:"

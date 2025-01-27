@@ -9,7 +9,6 @@ source code into a structured list of tokens based on defined token types.
 
 Key Points:
 - No external libraries are used (like re).
-- For indentation, we use unindent_line from utils.py.
 - Arithmetic operations produce operator-specific tokens:
   slideUp -> SLIDE_UP,
   slideDown -> SLIDE_DOWN,
@@ -19,27 +18,30 @@ Key Points:
 """
 
 from compiler.tokens import TokenType
-from compiler.utils import unindent_line
 
 class Tokenizer:
     def __init__(self):
         pass  # No initialization needed for now
 
+
     def tokenize(self, code):
         tokens = []
         lines = code.split("\n")
-        i = 0
+        index = 0
 
-        while i < len(lines):
-            line = lines[i].rstrip()
-            # current_ident = len(line) - len(line.strip())
+        for ln in lines:
+            line = ln.rstrip()
+            current_ident = len(line) - len(line.strip())
             
             if not line.strip():
-                i += 1
                 continue
+            
+            index += 1
+            
 
             stripped_line = line.strip()
             upper_line = stripped_line.upper()
+            # print("LINE: ", upper_line)
 
             # -------------------------------------------------------
             # 1) penguinSay: e.g. penguinSay "Hello World"
@@ -50,9 +52,11 @@ class Tokenizer:
                 value = stripped_line[len("penguinSay"):].strip()
                 tokens.append({
                     "type": TokenType.PENGUIN_SAY,
-                    "value": value
+                    "value": value,
+                    "indent": current_ident,
+                    "index" : index
+                    
                 })
-                i += 1
 
             # -------------------------------------------------------
             # 2) penguinTake: e.g. penguinTake(num1) "Enter value: "
@@ -63,8 +67,7 @@ class Tokenizer:
                 paren_close = stripped_line.find(")")
 
                 if paren_open == -1 or paren_close == -1 or paren_close < paren_open:
-                    # Invalid syntax -> skip
-                    i += 1
+
                     continue
 
                 name = stripped_line[paren_open + 1 : paren_close].strip()
@@ -86,9 +89,27 @@ class Tokenizer:
                 tokens.append({
                     "type": TokenType.PENGUIN_TAKE,
                     "name": name,
-                    "prompt": prompt
+                    "prompt": prompt,
+                    "indent": current_ident,
+                    "index" : index
                 })
-                i += 1
+                
+            # -------------------------------------------------------
+            # 8) returnIce: e.g. returnIce value
+            # -------------------------------------------------------
+                
+            elif upper_line.startswith("RETURNICE"):
+                # Everything after 'keepWalking' is the condition
+                value = stripped_line[len("returnIce"):].strip()
+
+                tokens.append({
+                    "type": TokenType.RETURN_ICE,
+                    "value": value,
+                    "indent": current_ident,
+                    "index" : index
+                })
+                
+
 
             # -------------------------------------------------------
             # 3) penguinDo: e.g. penguinDo(addOperation)(x, y)
@@ -99,25 +120,12 @@ class Tokenizer:
                 # Extract function name and params
                 name, params = self._extract_function_def(header)
 
-                # Gather indented block
-                block_lines = []
-                i += 1
-                while i < len(lines):
-                    next_line = lines[i]
-                    if next_line.startswith("    ") or next_line.startswith("\t"):
-                        block_lines.append(unindent_line(next_line))
-                        i += 1
-                    else:
-                        break
-
-                block_str = "\n".join(block_lines)
-                block_tokens = self.tokenize(block_str)
-
                 tokens.append({
                     "type": TokenType.PENGUIN_DO,
                     "name": name,
                     "params": params,
-                    "block": block_tokens
+                    "indent": current_ident,
+                    "index" : index
                 })
 
             # -------------------------------------------------------
@@ -127,23 +135,13 @@ class Tokenizer:
                 # Everything after 'keepWalking' is the condition
                 condition = stripped_line[len("keepWalking"):].strip()
 
-                # Gather indented block
-                block_lines = []
-                i += 1
-                while i < len(lines):
-                    next_line = lines[i]
-                    if next_line.startswith("    ") or next_line.startswith("\t"):
-                        block_lines.append(unindent_line(next_line))
-                        i += 1
-                    else:
-                        break
+                
 
-                # Recursively tokenize the block
-                block_tokens = self.tokenize("\n".join(block_lines))
                 tokens.append({
                     "type": TokenType.KEEP_WALKING,
                     "condition": condition,
-                    "block": block_tokens
+                    "indent": current_ident,
+                    "index" : index
                 })
 
             # -------------------------------------------------------
@@ -152,30 +150,21 @@ class Tokenizer:
             elif upper_line.startswith("PENGUINIF"):
                 condition = stripped_line[len("penguinIf"):].strip()
 
-                # Gather indented block
-                block_lines = []
-                i += 1
-                while i < len(lines):
-                    next_line = lines[i]
-                    if next_line.startswith("    ") or next_line.startswith("\t"):
-                        block_lines.append(unindent_line(next_line))
-                        i += 1
-                    else:
-                        break
 
-                block_tokens = self.tokenize("\n".join(block_lines))
+                
+
                 tokens.append({
                     "type": TokenType.PENGUIN_IF,
                     "condition": condition,
-                    "block": block_tokens
+                    "indent": current_ident,
+                    "index" : index
                 })
 
             # -------------------------------------------------------
             # 6) penguinWhatAbout: e.g. penguinWhatAbout(condition)
             #    (analogous to elif)
             # -------------------------------------------------------
-            elif (upper_line.startswith("PENGUINWHATABOUT") or
-                  upper_line.startswith("PENGUINWHATABOUT")):
+            elif upper_line.startswith("PENGUINWHATABOUT"):
 
                 # Distinguish either 'WHATABOUT' or 'WHAT_ABOUT'
                 cmd_len = 0
@@ -186,22 +175,13 @@ class Tokenizer:
 
                 condition = stripped_line[cmd_len:].strip()
 
-                # Gather indented block
-                block_lines = []
-                i += 1
-                while i < len(lines):
-                    next_line = lines[i]
-                    if next_line.startswith("    ") or next_line.startswith("\t"):
-                        block_lines.append(unindent_line(next_line))
-                        i += 1
-                    else:
-                        break
 
-                block_tokens = self.tokenize("\n".join(block_lines))
+                
                 tokens.append({
                     "type": TokenType.PENGUIN_WHAT_ABOUT,
                     "condition": condition,
-                    "block": block_tokens
+                    "indent": current_ident,
+                    "index" : index
                 })
 
             # -------------------------------------------------------
@@ -209,104 +189,53 @@ class Tokenizer:
             # -------------------------------------------------------
             elif upper_line.startswith("PENGUINELSE"):
                 # Gather indented block
-                block_lines = []
-                i += 1
-                while i < len(lines):
-                    next_line = lines[i]
-                    if next_line.startswith("    ") or next_line.startswith("\t"):
-                        block_lines.append(unindent_line(next_line))
-                        i += 1
-                    else:
-                        break
 
-                block_tokens = self.tokenize("\n".join(block_lines))
+                
                 tokens.append({
                     "type": TokenType.PENGUIN_ELSE,
-                    "block": block_tokens
+                    "indent": current_ident,
+                    "index" : index
                 })
 
-            # -------------------------------------------------------
-            # 8) returnIce: e.g. returnIce value
-            # -------------------------------------------------------
-            elif upper_line.startswith("RETURNICE"):
-                value = stripped_line[len("returnIce"):].strip()
-                tokens.append({
-                    "type": TokenType.RETURN_ICE,
-                    "value": value
-                })
-                i += 1
+            # # -------------------------------------------------------
+            # # 8) returnIce: e.g. returnIce value
+            # # -------------------------------------------------------
+                
+            # elif upper_line.startswith("RETURNICE"):
+            #     # Everything after 'keepWalking' is the condition
+            #     value = stripped_line[len("returnIce"):].strip()
+
+            #     tokens.append({
+            #         "type": TokenType.RETURN_ICE,
+            #         "value": value,
+            #         "indent": current_ident
+            #     })
                 
             # -------------------------------------------------------
             # 8) iceBucket:
             # -------------------------------------------------------
             elif upper_line.startswith("ICEBUCKET"):
-                value = stripped_line[len("ICEBUCKET"):].strip()
+                value = stripped_line[len("iceBucket"):].strip()
+                
                 tokens.append({
                     "type": TokenType.ICE_BUCKET,
-                    "value": value
+                    "value": value,
+                    "indent": current_ident,
+                    "index" : index
                 })
-                i += 1
-
 
             # -------------------------------------------------------
             # 9) break: e.g. break
             # -------------------------------------------------------
             elif stripped_line == "break":
                 tokens.append({
-                    "type": TokenType.PENGUIN_BREAK
+                    "type": TokenType.PENGUIN_BREAK,
+                    "indent": current_ident,
+                    "index" : index
                 })
-                i += 1
 
-            # -------------------------------------------------------
-            # 10) Custom arithmetic lines:
-            #     slideUp(result) = num1 slideUp num2
-            #     slideDown(result) = x slideDown y
-            #     etc.
-            # -------------------------------------------------------
-            elif (upper_line.startswith("SLIDEUP(") or
-                  upper_line.startswith("SLIDEDOWN(") or
-                  upper_line.startswith("PENGUINBOOST(") or
-                  upper_line.startswith("GIVEPENGUINS(") or
-                  upper_line.startswith("SNOWBALL(")):
-
-                if upper_line.startswith("SLIDEUP("):
-                    op_type = TokenType.SLIDE_UP
-                elif upper_line.startswith("SLIDEDOWN("):
-                    op_type = TokenType.SLIDE_DOWN
-                elif upper_line.startswith("PENGUINBOOST("):
-                    op_type = TokenType.PENGUIN_BOOST
-                elif upper_line.startswith("GIVEPENGUINS("):
-                    op_type = TokenType.GIVE_PENGUINS
-                else:  # SNOWBALL(
-                    op_type = TokenType.SNOWBALL
-
-                # Extract target name inside parentheses
-                paren_open = stripped_line.find("(")
-                paren_close = stripped_line.find(")")
-                if paren_open == -1 or paren_close == -1 or paren_close < paren_open:
-                    i += 1
-                    continue
-
-                target_var = stripped_line[paren_open + 1 : paren_close].strip()
-
-                # Find '=' to split out the expression
-                eq_index = stripped_line.find("=")
-                if eq_index == -1:
-                    i += 1
-                    continue
-
-                expression = stripped_line[eq_index + 1:].strip()
-                tokens.append({
-                    "type": op_type,
-                    "target": target_var,
-                    "expression": expression
-                })
-                i += 1
-
-            else:
-                # Unrecognized or leftover line -> skip
-                i += 1
-        print(tokens)
+            # print(tokens[-1])
+        # print(tokens)
 
         return tokens
 
