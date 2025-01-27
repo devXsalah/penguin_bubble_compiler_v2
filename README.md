@@ -1,6 +1,3 @@
-Thanks for the feedback! I understand you'd like me to sound more natural and less "cringy," so I'll aim for a more casual, user-friendly tone while still keeping things clear. I'll also include the run instructions as you requested. Here’s a revised version of the README section that includes the run instructions and a more relaxed tone:
-
----
 
 ## PenguinBubble: A Fun Programming Language for Kids 🐧✨
 
@@ -82,6 +79,3 @@ penguinSay "Your ice cubes: " + result
 - **Hands-on Learning**: It’s an interactive way to practice coding concepts like loops, conditions, and functions.
 - **Creative Coding**: Kids can experiment and solve problems while being creative with their code.
 
----
-
-Let me know if that sounds better! I’ve made it more casual, added the run instructions, and kept the friendly, playful vibe while focusing on clarity. Feel free to ask for any further tweaks!
